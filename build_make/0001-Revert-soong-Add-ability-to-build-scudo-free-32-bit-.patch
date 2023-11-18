@@ -1,0 +1,28 @@
+From 5ff5167c2ad46480f9b198363650feb8392989c2 Mon Sep 17 00:00:00 2001
+From: basamaryan <basam.aryan@gmail.com>
+Date: Mon, 27 Feb 2023 23:21:06 +0000
+Subject: [PATCH] Revert "soong: Add ability to build scudo-free 32-bit libc
+ variant."
+
+This reverts commit 78bf51b030f4699898bddf2c21c34ff987844a79.
+---
+ core/soong_config.mk | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/core/soong_config.mk b/core/soong_config.mk
+index c2d628688..7cb50658f 100644
+--- a/core/soong_config.mk
++++ b/core/soong_config.mk
+@@ -140,9 +140,6 @@ $(call add_json_list, DeviceSystemSdkVersions,           $(BOARD_SYSTEMSDK_VERSI
+ $(call add_json_str,  RecoverySnapshotVersion,           $(RECOVERY_SNAPSHOT_VERSION))
+ $(call add_json_list, Platform_systemsdk_versions,       $(PLATFORM_SYSTEMSDK_VERSIONS))
+ $(call add_json_bool, Malloc_not_svelte,                 $(call invert_bool,$(filter true,$(MALLOC_SVELTE))))
+-$(call add_json_bool, Malloc_not_svelte_libc32,          $(if $(MALLOC_SVELTE_FOR_LIBC32),\
+-                                                            $(call invert_bool,$(filter true,$(MALLOC_SVELTE_FOR_LIBC32))),\
+-                                                            $(call invert_bool,$(filter true,$(MALLOC_SVELTE)))))
+ $(call add_json_bool, Malloc_zero_contents,              $(call invert_bool,$(filter false,$(MALLOC_ZERO_CONTENTS))))
+ $(call add_json_bool, Malloc_pattern_fill_contents,      $(MALLOC_PATTERN_FILL_CONTENTS))
+ $(call add_json_str,  Override_rs_driver,                $(OVERRIDE_RS_DRIVER))
+-- 
+2.25.1
+

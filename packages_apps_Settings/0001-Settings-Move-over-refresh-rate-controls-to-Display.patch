@@ -1,0 +1,212 @@
+From d09afa5706bab7fab0b2ce0073a8b5cf66c71149 Mon Sep 17 00:00:00 2001
+From: Sourajit Karmakar <sourajit.karmakar@gmail.com>
+Date: Sun, 30 Jan 2022 03:43:39 -0500
+Subject: [PATCH 1/3] Settings: Move over refresh rate controls to Display
+
+* Move these preference to a completely separate category.
+
+* Don't block them if the user does not have developer options
+  enabled.
+
+[Jyotiraditya Panda <jyotiraditya@aospa.co>]
+ -> Switch to TogglePreferenceController
+ -> Cleanup
+
+Change-Id: Ic67b32b949a3c5b4ff280449580016bf4d9b9d6b
+Signed-off-by: Jyotiraditya Panda <jyotiraditya@aospa.co>
+Signed-off-by: Adithya R <gh0strider.2k18.reborn@gmail.com>
+---
+ res/values/cm_strings.xml                     |  3 ++
+ res/xml/development_settings.xml              |  5 --
+ res/xml/display_settings.xml                  | 22 ++++++--
+ .../DevelopmentSettingsDashboardFragment.java |  1 -
+ ...cePeakRefreshRatePreferenceController.java | 50 ++++++++-----------
+ 5 files changed, 40 insertions(+), 41 deletions(-)
+ rename src/com/android/settings/{development => display}/ForcePeakRefreshRatePreferenceController.java (74%)
+
+diff --git a/res/values/cm_strings.xml b/res/values/cm_strings.xml
+index 9cda169ed0..a34562cc0c 100644
+--- a/res/values/cm_strings.xml
++++ b/res/values/cm_strings.xml
+@@ -189,4 +189,7 @@
+ 
+     <!-- Location settings screen, setting summary for Assisted GPS switch -->
+     <string name="assisted_gps_summary">Download satellite assistance data from the internet which can greatly improve the GPS startup performance. For emergency calls, assisted GPS is always allowed.</string>
++
++    <!-- Name of Refresh Rate controls category in Display Settings [CHAR LIMIT=none] -->
++    <string name="category_name_refresh_rate_controls">Refresh Rate</string>
+ </resources>
+diff --git a/res/xml/development_settings.xml b/res/xml/development_settings.xml
+index 160d81d83c..1a616397a3 100644
+--- a/res/xml/development_settings.xml
++++ b/res/xml/development_settings.xml
+@@ -252,11 +252,6 @@
+             android:title="@string/overlay_settings_title"
+             android:summary="@string/overlay_settings_summary" />
+ 
+-        <SwitchPreference
+-            android:key="pref_key_peak_refresh_rate"
+-            android:title="@string/force_high_refresh_rate_toggle"
+-            android:summary="@string/force_high_refresh_rate_desc" />
+-
+         <SwitchPreference
+             android:key="allow_mock_modem"
+             android:title="@string/allow_mock_modem"
+diff --git a/res/xml/display_settings.xml b/res/xml/display_settings.xml
+index 7a9250b29e..36f8242a98 100644
+--- a/res/xml/display_settings.xml
++++ b/res/xml/display_settings.xml
+@@ -98,6 +98,23 @@
+             settings:keywords="@string/keywords_color_mode"/>
+     </PreferenceCategory>
+ 
++    <PreferenceCategory
++        android:title="@string/category_name_refresh_rate_controls">
++
++        <SwitchPreference
++            android:key="peak_refresh_rate"
++            android:title="@string/peak_refresh_rate_title"
++            android:summary="@string/peak_refresh_rate_summary"
++            settings:controller="com.android.settings.display.PeakRefreshRatePreferenceController"/>
++
++        <SwitchPreference
++            android:key="pref_key_peak_refresh_rate"
++            android:title="@string/force_high_refresh_rate_toggle"
++            android:summary="@string/force_high_refresh_rate_desc"
++            settings:controller="com.android.settings.display.ForcePeakRefreshRatePreferenceController"/>
++
++    </PreferenceCategory>
++
+     <PreferenceCategory
+         android:title="@string/category_name_display_controls">
+ 
+@@ -141,11 +158,6 @@
+             android:summary="@string/summary_placeholder"
+             settings:controller="com.android.settings.display.MinRefreshRatePreferenceController" />
+ 
+-        <SwitchPreference
+-            android:key="peak_refresh_rate"
+-            android:title="@string/peak_refresh_rate_title"
+-            settings:controller="com.android.settings.display.PeakRefreshRatePreferenceController"/>
+-
+         <SwitchPreference
+             android:key="show_operator_name"
+             android:title="@string/show_operator_name_title"
+diff --git a/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java b/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java
+index 704f4d8370..ccce87c9dd 100644
+--- a/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java
++++ b/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java
+@@ -538,7 +538,6 @@ public class DevelopmentSettingsDashboardFragment extends RestrictedDashboardFra
+         controllers.add(new SelectDebugAppPreferenceController(context, fragment));
+         controllers.add(new WaitForDebuggerPreferenceController(context));
+         controllers.add(new EnableGpuDebugLayersPreferenceController(context));
+-        controllers.add(new ForcePeakRefreshRatePreferenceController(context));
+         controllers.add(new EnableVerboseVendorLoggingPreferenceController(context));
+         controllers.add(new VerifyAppsOverUsbPreferenceController(context));
+         controllers.add(new ArtVerifierPreferenceController(context));
+diff --git a/src/com/android/settings/development/ForcePeakRefreshRatePreferenceController.java b/src/com/android/settings/display/ForcePeakRefreshRatePreferenceController.java
+similarity index 74%
+rename from src/com/android/settings/development/ForcePeakRefreshRatePreferenceController.java
+rename to src/com/android/settings/display/ForcePeakRefreshRatePreferenceController.java
+index d5d40254fa..14edc23dca 100644
+--- a/src/com/android/settings/development/ForcePeakRefreshRatePreferenceController.java
++++ b/src/com/android/settings/display/ForcePeakRefreshRatePreferenceController.java
+@@ -14,7 +14,7 @@
+  * limitations under the License.
+  */
+ 
+-package com.android.settings.development;
++package com.android.settings.display;
+ 
+ import android.content.Context;
+ import android.hardware.display.DisplayManager;
+@@ -29,9 +29,9 @@ import androidx.preference.SwitchPreference;
+ 
+ import com.android.settings.R;
+ import com.android.settings.core.PreferenceControllerMixin;
+-import com.android.settingslib.development.DeveloperOptionsPreferenceController;
++import com.android.settings.core.TogglePreferenceController;
+ 
+-public class ForcePeakRefreshRatePreferenceController extends DeveloperOptionsPreferenceController
++public class ForcePeakRefreshRatePreferenceController extends TogglePreferenceController
+         implements Preference.OnPreferenceChangeListener, PreferenceControllerMixin {
+ 
+     @VisibleForTesting
+@@ -44,10 +44,11 @@ public class ForcePeakRefreshRatePreferenceController extends DeveloperOptionsPr
+     float mPeakRefreshRate;
+ 
+     private static final String TAG = "ForcePeakRefreshRateCtr";
+-    private static final String PREFERENCE_KEY = "pref_key_peak_refresh_rate";
+ 
+-    public ForcePeakRefreshRatePreferenceController(Context context) {
+-        super(context);
++    private Preference mPreference;
++
++    public ForcePeakRefreshRatePreferenceController(Context context, String key) {
++        super(context, key);
+ 
+         final DisplayManager dm = context.getSystemService(DisplayManager.class);
+         final Display display = dm.getDisplay(Display.DEFAULT_DISPLAY);
+@@ -63,11 +64,6 @@ public class ForcePeakRefreshRatePreferenceController extends DeveloperOptionsPr
+             + " mPeakRefreshRate : " + mPeakRefreshRate);
+     }
+ 
+-    @Override
+-    public String getPreferenceKey() {
+-        return PREFERENCE_KEY;
+-    }
+-
+     @Override
+     public void displayPreference(PreferenceScreen screen) {
+         super.displayPreference(screen);
+@@ -75,34 +71,28 @@ public class ForcePeakRefreshRatePreferenceController extends DeveloperOptionsPr
+     }
+ 
+     @Override
+-    public boolean onPreferenceChange(Preference preference, Object newValue) {
+-        final boolean isEnabled = (Boolean) newValue;
+-        forcePeakRefreshRate(isEnabled);
+-
+-        return true;
++    public int getAvailabilityStatus() {
++        if (mContext.getResources().getBoolean(R.bool.config_show_smooth_display)) {
++            return mPeakRefreshRate > DEFAULT_REFRESH_RATE ? AVAILABLE : UNSUPPORTED_ON_DEVICE;
++        } else {
++            return UNSUPPORTED_ON_DEVICE;
++        }
+     }
+ 
+     @Override
+-    public void updateState(Preference preference) {
+-        ((SwitchPreference) mPreference).setChecked(isForcePeakRefreshRateEnabled());
++    public boolean isChecked() {
++        return isForcePeakRefreshRateEnabled();
+     }
+ 
+     @Override
+-    public boolean isAvailable() {
+-        if (mContext.getResources().getBoolean(R.bool.config_show_smooth_display)) {
+-            return mPeakRefreshRate > DEFAULT_REFRESH_RATE;
+-        } else {
+-            return false;
+-        }
++    public boolean setChecked(boolean isChecked) {
++        forcePeakRefreshRate(isChecked);
++        return true;
+     }
+ 
+     @Override
+-    protected void onDeveloperOptionsSwitchDisabled() {
+-        super.onDeveloperOptionsSwitchDisabled();
+-        Settings.System.putFloat(mContext.getContentResolver(),
+-            Settings.System.MIN_REFRESH_RATE, NO_CONFIG);
+-
+-        ((SwitchPreference) mPreference).setChecked(false);
++    public int getSliceHighlightMenuRes() {
++        return R.string.menu_key_display;
+     }
+ 
+     @VisibleForTesting
+-- 
+2.25.1
+

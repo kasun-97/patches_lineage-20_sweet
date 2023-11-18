@@ -1,0 +1,48 @@
+From 472d11f9854d62012e784426f76169bacd8b0d0c Mon Sep 17 00:00:00 2001
+From: basamaryan <basam.aryan@gmail.com>
+Date: Mon, 27 Feb 2023 23:20:51 +0000
+Subject: [PATCH] Revert "Add ability to enable scudo-free 32-bit libc
+ variant."
+
+This reverts commit bed769cb45a23dc03d464ddd9a974a0afe769e93.
+---
+ android/variable.go | 9 ---------
+ 1 file changed, 9 deletions(-)
+
+diff --git a/android/variable.go b/android/variable.go
+index e56fd777e..51426ef31 100644
+--- a/android/variable.go
++++ b/android/variable.go
+@@ -73,13 +73,6 @@ type variableProperties struct {
+ 			Header_libs         []string `android:"arch_variant"`
+ 		} `android:"arch_variant"`
+ 
+-		Malloc_not_svelte_libc32 struct {
+-			Cflags              []string `android:"arch_variant"`
+-			Shared_libs         []string `android:"arch_variant"`
+-			Whole_static_libs   []string `android:"arch_variant"`
+-			Exclude_static_libs []string `android:"arch_variant"`
+-		} `android:"arch_variant"`
+-
+ 		Malloc_zero_contents struct {
+ 			Cflags []string `android:"arch_variant"`
+ 		} `android:"arch_variant"`
+@@ -267,7 +260,6 @@ type productVariables struct {
+ 	Always_use_prebuilt_sdks     *bool    `json:",omitempty"`
+ 	Skip_boot_jars_check         *bool    `json:",omitempty"`
+ 	Malloc_not_svelte            *bool    `json:",omitempty"`
+-	Malloc_not_svelte_libc32     *bool    `json:",omitempty"`
+ 	Malloc_zero_contents         *bool    `json:",omitempty"`
+ 	Malloc_pattern_fill_contents *bool    `json:",omitempty"`
+ 	Safestack                    *bool    `json:",omitempty"`
+@@ -502,7 +494,6 @@ func (v *productVariables) SetDefaultConfig() {
+ 		AAPTPrebuiltDPI:     []string{"xhdpi", "xxhdpi"},
+ 
+ 		Malloc_not_svelte:            boolPtr(true),
+-		Malloc_not_svelte_libc32:     boolPtr(true),
+ 		Malloc_zero_contents:         boolPtr(true),
+ 		Malloc_pattern_fill_contents: boolPtr(false),
+ 		Safestack:                    boolPtr(false),
+-- 
+2.25.1
+

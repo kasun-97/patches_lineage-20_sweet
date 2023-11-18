@@ -1,0 +1,31 @@
+From f7cb0a16e3ebb7983d34f8aac6ed0542947ce0db Mon Sep 17 00:00:00 2001
+From: Adithya R <gh0strider.2k18.reborn@gmail.com>
+Date: Sun, 2 Oct 2022 23:07:22 +0530
+Subject: [PATCH] debuggerd: Disable scudo usage
+
+Since we have switched to jemalloc (bionic).
+---
+ debuggerd/Android.bp | 7 -------
+ 1 file changed, 7 deletions(-)
+
+diff --git a/debuggerd/Android.bp b/debuggerd/Android.bp
+index 51988727d..794cc8a6b 100644
+--- a/debuggerd/Android.bp
++++ b/debuggerd/Android.bp
+@@ -255,13 +255,6 @@ cc_library_static {
+         debuggable: {
+             cflags: ["-DROOT_POSSIBLE"],
+         },
+-
+-        malloc_not_svelte: {
+-            cflags: ["-DUSE_SCUDO"],
+-            whole_static_libs: ["libscudo"],
+-            srcs: ["libdebuggerd/scudo.cpp"],
+-            header_libs: ["scudo_headers"],
+-        },
+     },
+ }
+ 
+-- 
+2.25.1
+
