@@ -1,0 +1,26 @@
+From 6b3a9f50e95f45f4454f4863ceaf21e923715d2a Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Sun, 24 Dec 2023 20:05:33 +0530
+Subject: [PATCH 6/6] fixup! Add support for app signature spoofing
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ core/res/AndroidManifest.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/core/res/AndroidManifest.xml b/core/res/AndroidManifest.xml
+index dfaab7fa808b..013bfb802b3e 100644
+--- a/core/res/AndroidManifest.xml
++++ b/core/res/AndroidManifest.xml
+@@ -4261,7 +4261,7 @@
+     <!-- @hide Allows an application to change the package signature as
+          seen by applications. Only allowed to be used by microG.-->
+     <permission android:name="android.permission.FAKE_PACKAGE_SIGNATURE"
+-        android:protectionLevel="signature" />
++        android:protectionLevel="signature|privileged" />
+ 
+     <!-- @deprecated No longer useful, see
+          {@link android.content.pm.PackageManager#addPackageToPreferred}
+-- 
+2.34.1
+

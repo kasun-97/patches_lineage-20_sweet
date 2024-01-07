@@ -1,18 +1,19 @@
-From a4ad4bce5368ec829649450ed14bb3f02371e860 Mon Sep 17 00:00:00 2001
+From 12149691e80b736f17de9cfacf630c766656622a Mon Sep 17 00:00:00 2001
 From: Danny Baumann <dannybaumann@web.de>
 Date: Tue, 3 Mar 2015 10:43:28 +0100
-Subject: [PATCH 06/15] Allow sending vendor- or device-specific commands to
- the camera HAL.
+Subject: [PATCH 4/6] Allow sending vendor- or device-specific commands to the
+ camera HAL.
 
-Change-Id: I2aaa9e526b6f1a35d45e96b6d23e3db972d82733
-Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+Change-Id: Ib935e549c37243561f0838ae42fc9cecd154f41f
+Signed-off-by: Joey Huab <joey@evolution-x.org>
+Signed-off-by: aswin7469 <aswinas@pixysos.com>
 ---
  core/java/android/hardware/Camera.java | 14 ++++++++++++++
  core/jni/android_hardware_Camera.cpp   | 13 +++++++++++++
  2 files changed, 27 insertions(+)
 
 diff --git a/core/java/android/hardware/Camera.java b/core/java/android/hardware/Camera.java
-index 5155b30da4cd..0ca07a6c40b9 100644
+index b47ae78cd5ed..73fa7b4e9e7b 100644
 --- a/core/java/android/hardware/Camera.java
 +++ b/core/java/android/hardware/Camera.java
 @@ -1799,6 +1799,20 @@ public class Camera {
@@ -37,7 +38,7 @@ index 5155b30da4cd..0ca07a6c40b9 100644
       * Callback interface for zoom changes during a smooth zoom operation.
       *
 diff --git a/core/jni/android_hardware_Camera.cpp b/core/jni/android_hardware_Camera.cpp
-index d1602aecde85..ecbb6553ca0a 100644
+index d1602aecde85..7ea02139faf5 100644
 --- a/core/jni/android_hardware_Camera.cpp
 +++ b/core/jni/android_hardware_Camera.cpp
 @@ -1049,6 +1049,18 @@ static int32_t android_hardware_Camera_getAudioRestriction(
@@ -63,10 +64,10 @@ index d1602aecde85..ecbb6553ca0a 100644
           (void *)android_hardware_Camera_enableFocusMoveCallback},
          {"setAudioRestriction", "(I)V", (void *)android_hardware_Camera_setAudioRestriction},
          {"getAudioRestriction", "()I", (void *)android_hardware_Camera_getAudioRestriction},
-+        { "_sendVendorCommand", "(III)V", (void *)android_hardware_Camera_sendVendorCommand },
++        { "_sendVendorCommand","(III)V", (void *)android_hardware_Camera_sendVendorCommand },
  };
  
  struct field {
 -- 
-2.25.1
+2.34.1
 
